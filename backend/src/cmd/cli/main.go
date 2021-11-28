@@ -1,6 +1,8 @@
 package main
 
 import (
+	"backend/datastore"
+	"backend/db"
 	"backend/server"
 	"log"
 	"os"
@@ -10,6 +12,12 @@ import (
 
 func main() {
 
+	db := db.MustOpen("file:db.sqlite3")
+	datastore, err := datastore.New(db)
+	if err != nil {
+		log.Fatalf("Failed to open Datastore: %v", err)
+	}
+	log.Println(datastore)
 	server := server.New(":9595")
 
 	onInterrupt(func() { server.Stop() })

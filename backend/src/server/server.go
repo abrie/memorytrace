@@ -8,19 +8,23 @@ import (
 
 type Server struct {
 	signalChan chan struct{}
-	handler    *http.ServeMux
+	mux        *http.ServeMux
 	server     *http.Server
 }
 
 func New(addr string) Server {
-	handler := http.NewServeMux()
-	server := http.Server{Addr: addr, Handler: handler}
+	mux := http.NewServeMux()
+	server := http.Server{Addr: addr, Handler: mux}
 
 	return Server{
 		signalChan: make(chan struct{}),
-		handler:    handler,
+		mux:        mux,
 		server:     &server,
 	}
+}
+
+func (server Server) AddHandler(pattern string, handler http.Handler) {
+	server.mux.Handle(pattern, handler)
 }
 
 func (server Server) Start() {
