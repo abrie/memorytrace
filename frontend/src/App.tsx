@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
+import axios from 'axios';
 
 interface AppProps {}
 
@@ -13,10 +14,7 @@ interface Position {
   latitude: number;
 }
 
-interface StoredMemory {
-  memory: Memory;
-  position: Position;
-}
+type StoredMemory = Memory & Position;
 
 function getPosition(options?: PositionOptions): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) =>
@@ -26,6 +24,7 @@ function getPosition(options?: PositionOptions): Promise<GeolocationPosition> {
 
 function App({}: AppProps) {
   const [memory, setMemory] = useState<Memory | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [position, setPosition] = useState<Position | null>(null);
 
   const newMemory = async () => {
@@ -41,20 +40,35 @@ function App({}: AppProps) {
     });
   };
 
-  const storeMemory = () => {
+  const storeMemory = async () => {
     if (memory == null || position == null) {
       return;
     }
-    const str = localStorage.getItem('memories');
-    const stored: StoredMemory[] = str ? JSON.parse(str) : [];
-    stored.push({ memory, position });
-    localStorage.setItem('memories', JSON.stringify(stored));
+    const storedMemory: StoredMemory = {
+      ...memory,
+      ...position,
+    };
+    try {
+      await axios.post('/api/memory', storedMemory);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setErrorMessage(error.message);
+        return;
+      } else {
+        setErrorMessage('Client Error: Unable to create request.');
+        return;
+      }
+    }
+    setErrorMessage(null);
     setMemory(null);
     setPosition(null);
   };
 
   return (
-    <div className="container w-full border mx-auto">
+    <div className="container w-full m-2 mx-auto">
+      {errorMessage && (
+        <div className="bg-red-400 text-white font-bold">{errorMessage}</div>
+      )}
       <button className="rounded-sm border" onClick={newMemory}>
         +
       </button>

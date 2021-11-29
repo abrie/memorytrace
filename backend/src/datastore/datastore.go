@@ -3,6 +3,7 @@ package datastore
 import (
 	"backend/datastore/db"
 	"backend/models/memory"
+	"log"
 	"net/http"
 )
 
@@ -21,10 +22,12 @@ func New(db db.Interface) (Datastore, error) {
 }
 
 func (datastore Datastore) GetMemories() ([]memory.Memory, error) {
+	log.Printf("Getting memories\n")
 	return datastore.db.SelectMemories()
 }
 
 func (datastore Datastore) PutMemory(memory memory.Memory) error {
+	log.Printf("Putting memory: %v\n", memory)
 	return datastore.db.InsertMemory(memory)
 }
 

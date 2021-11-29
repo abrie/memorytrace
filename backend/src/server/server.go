@@ -23,7 +23,7 @@ func New(addr string) Server {
 	}
 }
 
-func (server Server) AddHandler(pattern string, handler http.Handler) {
+func (server Server) AddHandler(pattern string, handler http.HandlerFunc) {
 	server.mux.Handle(pattern, handler)
 }
 
