@@ -39,6 +39,11 @@ function App({}: AppProps) {
     });
   };
 
+  const cancelMemory = () => {
+    setMemory(null);
+    setPosition(null);
+  };
+
   const storeMemory = async () => {
     if (memory == null || position == null) {
       return;
@@ -48,7 +53,7 @@ function App({}: AppProps) {
       ...position,
     };
     try {
-      await axios.post('/api/memory', storedMemory);
+      await axios.post('/api/_memory', storedMemory);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setErrorMessage(error.message);
@@ -65,15 +70,40 @@ function App({}: AppProps) {
 
   return (
     <div className="container w-full m-2 mx-auto">
+      <Title />
       <ErrorBanner message={errorMessage} />
-      {errorMessage && (
-        <div className="bg-red-400 text-white font-bold">{errorMessage}</div>
-      )}
-      <button className="rounded-sm border" onClick={newMemory}>
-        +
-      </button>
-      {memory && MemoryEditor({ memory, position, setMemory, storeMemory })}
+      <ToolBar onNewMemory={newMemory} />
+      <MemoryEditor
+        memory={memory}
+        position={position}
+        setMemory={setMemory}
+        storeMemory={storeMemory}
+        cancelMemory={cancelMemory}
+      />
     </div>
+  );
+}
+
+function Title(): JSX.Element {
+  return (
+    <header>
+      <div className="font-mono text-center">memorytrace</div>
+    </header>
+  );
+}
+
+interface ToolBarProps {
+  onNewMemory: () => void;
+}
+
+function ToolBar({ onNewMemory }: ToolBarProps): JSX.Element {
+  return (
+    <button
+      className="rounded-sm border p-3 bg-green-300"
+      onClick={onNewMemory}
+    >
+      +
+    </button>
   );
 }
 
@@ -82,10 +112,10 @@ interface ErrorBannerProps {
 }
 
 function ErrorBanner({ message }: ErrorBannerProps): JSX.Element {
-  if (message == null) {
+  if (message === null) {
     return <></>;
   } else {
-    return <div className="bg-red-200 text-white font-bold">{message}</div>;
+    return <div className="p-1 bg-red-500 text-white font-bold">{message}</div>;
   }
 }
 interface MemoryEditorProps {
@@ -93,6 +123,7 @@ interface MemoryEditorProps {
   memory: Memory;
   setMemory: (memory: Memory) => void;
   storeMemory: () => void;
+  cancelMemory: () => void;
 }
 
 function MemoryEditor({
@@ -100,15 +131,10 @@ function MemoryEditor({
   position,
   setMemory,
   storeMemory,
+  cancelMemory,
 }: MemoryEditorProps): JSX.Element {
   return (
     <div>
-      <div className="flex flex-row">
-        <div>timestamp: {memory.timestamp}</div>
-        <div className="mx-1">.</div>
-        <div>{position ? 'ok' : 'capturing...'}</div>
-        <button onClick={() => storeMemory()}>store</button>
-      </div>
       <textarea
         className="p-1 w-full border-2"
         placeholder="...???"
@@ -118,6 +144,15 @@ function MemoryEditor({
         value={memory.text}
         autoFocus
       ></textarea>
+      <div className="flex flex-row">
+        <div className="px-5">{position ? 'ok' : 'acquiring...'}</div>
+        <button className="bg-green-400 px-5" onClick={() => storeMemory()}>
+          store
+        </button>
+        <button className="px-5 bg-yellow-400" onClick={() => cancelMemory()}>
+          cancel
+        </button>
+      </div>
     </div>
   );
 }
