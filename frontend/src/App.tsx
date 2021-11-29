@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 interface AppProps {}
@@ -6,14 +6,9 @@ interface AppProps {}
 interface Memory {
   timestamp: number;
   text: string;
+  longitude: number | null;
+  latitude: number | null;
 }
-
-interface Position {
-  longitude: number;
-  latitude: number;
-}
-
-type StoredMemory = Memory & Position;
 
 function getPosition(options?: PositionOptions): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) =>
@@ -22,38 +17,12 @@ function getPosition(options?: PositionOptions): Promise<GeolocationPosition> {
 }
 
 function App({}: AppProps) {
-  const [memory, setMemory] = useState<Memory | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [position, setPosition] = useState<Position | null>(null);
+  const [showEditor, setShowEditor] = useState<boolean>(false);
 
-  const newMemory = async () => {
-    setMemory({
-      timestamp: Date.now(),
-      text: '',
-    });
-
-    const position = await getPosition();
-    setPosition({
-      longitude: position.coords.longitude,
-      latitude: position.coords.latitude,
-    });
-  };
-
-  const cancelMemory = () => {
-    setMemory(null);
-    setPosition(null);
-  };
-
-  const storeMemory = async () => {
-    if (memory == null || position == null) {
-      return;
-    }
-    const storedMemory: StoredMemory = {
-      ...memory,
-      ...position,
-    };
+  const storeMemory = async (memory: Memory) => {
     try {
-      await axios.post('/api/_memory', storedMemory);
+      await axios.post('/api/memory', memory);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setErrorMessage(error.message);
@@ -64,22 +33,20 @@ function App({}: AppProps) {
       }
     }
     setErrorMessage(null);
-    setMemory(null);
-    setPosition(null);
+    setShowEditor(false);
   };
 
   return (
     <div className="container w-full m-2 mx-auto">
       <Title />
       <ErrorBanner message={errorMessage} />
-      <ToolBar onNewMemory={newMemory} />
-      <MemoryEditor
-        memory={memory}
-        position={position}
-        setMemory={setMemory}
-        storeMemory={storeMemory}
-        cancelMemory={cancelMemory}
-      />
+      <ToolBar onNewMemory={() => setShowEditor(true)} />
+      {showEditor && (
+        <MemoryEditor
+          storeMemory={storeMemory}
+          cancelMemory={() => setShowEditor(false)}
+        />
+      )}
     </div>
   );
 }
@@ -119,23 +86,34 @@ function ErrorBanner({ message }: ErrorBannerProps): JSX.Element {
   }
 }
 interface MemoryEditorProps {
-  position: Position | null;
-  memory: Memory | null;
-  setMemory: (memory: Memory) => void;
-  storeMemory: () => void;
+  storeMemory: (memory: Memory) => void;
   cancelMemory: () => void;
 }
 
-function MemoryEditor({
-  memory,
-  position,
-  setMemory,
-  storeMemory,
-  cancelMemory,
-}: MemoryEditorProps): JSX.Element {
-  if (memory === null) {
-    return <></>;
-  }
+function MemoryEditor(props: MemoryEditorProps): JSX.Element {
+  const newMemory: Memory = {
+    text: '',
+    timestamp: Date.now(),
+    latitude: null,
+    longitude: null,
+  };
+
+  const [memory, setMemory] = useState<Memory>(newMemory);
+  const [geoAcquired, setGeoAcquired] = useState<boolean>(false);
+
+  useEffect(() => {
+    async function aquire() {
+      const geo = await getPosition();
+      setMemory({
+        ...memory,
+        longitude: geo.coords.longitude,
+        latitude: geo.coords.latitude,
+      });
+      setGeoAcquired(true);
+    }
+    aquire();
+  });
+
   return (
     <div>
       <textarea
@@ -148,11 +126,17 @@ function MemoryEditor({
         autoFocus
       ></textarea>
       <div className="flex flex-row">
-        <div className="px-5">{position ? 'ok' : 'acquiring...'}</div>
-        <button className="bg-green-400 px-5" onClick={() => storeMemory()}>
+        <div className="px-5">{geoAcquired ? 'ok' : 'acquiring...'}</div>
+        <button
+          className="bg-green-400 px-5"
+          onClick={() => props.storeMemory(memory)}
+        >
           store
         </button>
-        <button className="px-5 bg-yellow-400" onClick={() => cancelMemory()}>
+        <button
+          className="px-5 bg-yellow-400"
+          onClick={() => props.cancelMemory()}
+        >
           cancel
         </button>
       </div>
