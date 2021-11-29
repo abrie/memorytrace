@@ -120,7 +120,7 @@ function ErrorBanner({ message }: ErrorBannerProps): JSX.Element {
 }
 interface MemoryEditorProps {
   position: Position | null;
-  memory: Memory;
+  memory: Memory | null;
   setMemory: (memory: Memory) => void;
   storeMemory: () => void;
   cancelMemory: () => void;
@@ -133,6 +133,9 @@ function MemoryEditor({
   storeMemory,
   cancelMemory,
 }: MemoryEditorProps): JSX.Element {
+  if (memory === null) {
+    return <></>;
+  }
   return (
     <div>
       <textarea
