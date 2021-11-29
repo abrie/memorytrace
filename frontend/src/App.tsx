@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './App.css';
 import axios from 'axios';
 
 interface AppProps {}
@@ -66,6 +65,7 @@ function App({}: AppProps) {
 
   return (
     <div className="container w-full m-2 mx-auto">
+      <ErrorBanner message={errorMessage} />
       {errorMessage && (
         <div className="bg-red-400 text-white font-bold">{errorMessage}</div>
       )}
@@ -77,6 +77,17 @@ function App({}: AppProps) {
   );
 }
 
+interface ErrorBannerProps {
+  message: string | null;
+}
+
+function ErrorBanner({ message }: ErrorBannerProps): JSX.Element {
+  if (message == null) {
+    return <></>;
+  } else {
+    return <div className="bg-red-200 text-white font-bold">{message}</div>;
+  }
+}
 interface MemoryEditorProps {
   position: Position | null;
   memory: Memory;
