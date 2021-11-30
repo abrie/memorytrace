@@ -22,15 +22,14 @@ export function MemoryEditor(props: MemoryEditorProps): JSX.Element {
     return {
       text,
       timestamp,
+      geolocationStatus: position.status,
       latitude: position.latitude,
       longitude: position.longitude,
     };
   };
   useEffect(() => {
     async function aquire() {
-      console.log('Getting position...');
       const p = await getPosition();
-      console.log('Got position.', p);
       setPosition(p);
     }
     aquire();
@@ -48,7 +47,6 @@ export function MemoryEditor(props: MemoryEditorProps): JSX.Element {
         autoFocus
       ></textarea>
       <div className="flex flex-row">
-        <div className="px-5">{position.status}</div>
         <button
           className="bg-green-400 px-5"
           onClick={() => props.storeMemory(buildMemory())}
@@ -61,6 +59,7 @@ export function MemoryEditor(props: MemoryEditorProps): JSX.Element {
         >
           cancel
         </button>
+        <div className="px-5">{position.status}</div>
       </div>
     </div>
   );
