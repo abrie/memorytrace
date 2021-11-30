@@ -24,7 +24,7 @@ func MustOpen(dsnURI string) DB {
 }
 
 func (db DB) CreateTables() error {
-	stmt, err := db.db.Prepare("CREATE TABLE IF NOT EXISTS memory(text TEXT, timestamp INTEGER, latitude REAL, longitude REAL)")
+	stmt, err := db.db.Prepare("CREATE TABLE IF NOT EXISTS memory(text TEXT, timestamp INTEGER, geolocation_status TEXT, latitude REAL, longitude REAL)")
 	if err != nil {
 		return err
 	}
@@ -38,12 +38,12 @@ func (db DB) CreateTables() error {
 }
 
 func (db DB) InsertMemory(memory memory.Memory) error {
-	stmt, err := db.db.Prepare("INSERT INTO memory (	text, timestamp, latitude, longitude) VALUES(?,?,?,?) ")
+	stmt, err := db.db.Prepare("INSERT INTO memory (text, timestamp, geolocation_status, latitude, longitude) VALUES(?,?,?,?,?) ")
 	if err != nil {
 		return err
 	}
 
-	res, err := stmt.Exec(memory.Text, memory.Timestamp, memory.Latitude, memory.Longitude)
+	res, err := stmt.Exec(memory.Text, memory.Timestamp, memory.GeolocationStatus, memory.Latitude, memory.Longitude)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (db DB) InsertMemory(memory memory.Memory) error {
 }
 
 func (db DB) SelectMemories() ([]memory.Memory, error) {
-	rows, err := db.db.Query("SELECT text, timestamp, latitude, longitude FROM memory")
+	rows, err := db.db.Query("SELECT text, timestamp, geolocation_status, latitude, longitude FROM memory")
 	defer rows.Close()
 	if err != nil {
 		return []memory.Memory{}, err
@@ -64,7 +64,7 @@ func (db DB) SelectMemories() ([]memory.Memory, error) {
 
 	for rows.Next() {
 		m := memory.Memory{}
-		if err := rows.Scan(&m.Text, &m.Timestamp, &m.Latitude, &m.Longitude); err != nil {
+		if err := rows.Scan(&m.Text, &m.Timestamp, &m.GeolocationStatus, &m.Latitude, &m.Longitude); err != nil {
 			return results, err
 		}
 		results = append(results, m)
