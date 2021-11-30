@@ -32,7 +32,10 @@ function App({}: AppProps) {
     <div className="container w-full m-2 mx-auto">
       <TitleBar />
       <ErrorBanner message={errorMessage} />
-      <ToolBar onNewMemory={() => setShowEditor(true)} />
+      <ToolBar
+        canAddNewMemory={!showEditor}
+        onNewMemory={() => setShowEditor(true)}
+      />
       {showEditor && (
         <MemoryEditor
           storeMemory={storeMemory}
