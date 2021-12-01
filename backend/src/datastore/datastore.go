@@ -3,6 +3,7 @@ package datastore
 import (
 	"backend/datastore/db"
 	"backend/models/memory"
+	"encoding/json"
 	"log"
 	"net/http"
 )
@@ -31,23 +32,19 @@ func (datastore Datastore) PutMemory(memory memory.Memory) error {
 	return datastore.db.InsertMemory(memory)
 }
 
-func (datastore Datastore) Handler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
-			datastore.GetHandler(w, r)
+func (datastore Datastore) MemoryHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		var m memory.Memory
+		if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
+			log.Printf("Bad Request: %v", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if r.Method == "POST" {
-			datastore.PostHandler(w, r)
+		if err := datastore.PutMemory(m); err != nil {
+			log.Printf("Internal Server Error: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
-func (datastore Datastore) GetHandler(w http.ResponseWriter, r *http.Request) {
-}
-
-func (datastore Datastore) PostHandler(w http.ResponseWriter, r *http.Request) {
-}

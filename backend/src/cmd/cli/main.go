@@ -3,9 +3,7 @@ package main
 import (
 	"backend/datastore"
 	"backend/db"
-	"backend/models/memory"
 	"backend/server"
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -13,29 +11,22 @@ import (
 	"syscall"
 )
 
-func main() {
+func loggingHandler(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method, r.URL.Path)
+		handler.ServeHTTP(w, r)
+	})
+}
 
-	db := db.MustOpen("file:db.sqlite3")
+func main() {
+	db := db.MustOpen("db.sqlite3")
 	datastore, err := datastore.New(db)
 	if err != nil {
 		log.Fatalf("Failed to open Datastore: %v", err)
 	}
 	server := server.New(":9595")
-	server.AddHandler("/api/memory", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "POST" {
-			var m memory.Memory
-			if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
-				log.Printf("Bad Request: %v", err)
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			if err := datastore.PutMemory(m); err != nil {
-				log.Printf("Internal Server Error: %v", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-	})
+	server.AddHandler("/api/memory", datastore.MemoryHandler)
+	server.AddHandler("/", loggingHandler(http.FileServer(http.Dir("."))).ServeHTTP)
 
 	onInterrupt(func() { server.Stop() })
 	server.Start()
