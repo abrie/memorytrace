@@ -48,7 +48,12 @@ func (db DB) InsertMemory(memory memory.Memory) error {
 		return err
 	}
 
-	log.Printf("Inserted memory: %v\n", res)
+	id, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Inserted memory: %d", id)
 
 	return nil
 }
