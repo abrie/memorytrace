@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+env:
+    GHCR_IMAGE_NAME: ghcr.io/abrie/memorytracker:latest
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: yarn
+      - name: Run unit tests
+        run: yarn test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag $GHCR_IMAGE_NAME --build-arg GITHUB_RUN_NUMBER
+
+      - name : Log into Github Container Registry
+        run: echo "${{ secrets.GHCR_WRITE_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+
+      - name: Push image to registry
+        run: docker push $GHCR_IMAGE_NAME
