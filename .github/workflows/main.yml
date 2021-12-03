@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Run unit tests
-        run: yarn test
+        run: yarn --verbose test
 
   build:
     needs: test
