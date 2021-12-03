@@ -6,9 +6,7 @@ import { ToolBar } from './ToolBar';
 import type { Memory } from './models';
 import axios from 'axios';
 
-interface AppProps {}
-
-function App({}: AppProps) {
+function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showEditor, setShowEditor] = useState<boolean>(false);
 

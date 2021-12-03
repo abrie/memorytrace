@@ -23,15 +23,21 @@ func loggingHandler(handler http.Handler) http.Handler {
 
 func main() {
 	addr := flag.String("addr", ":80", "Address for server")
-	datastorePath := flag.String("datastore", "", "Path to datastore")
+	dataPath := flag.String("data", "", "Path to datastore")
+	staticPath := flag.String("static", "", "Path to serve as static files.")
 	flag.Parse()
 
-	absDatastorePath, err := filepath.Abs(*datastorePath)
+	absDataPath, err := filepath.Abs(*dataPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	dbPath := path.Join(absDatastorePath, "db.sqlite3")
+	absStaticPath, err := filepath.Abs(*staticPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dbPath := path.Join(absDataPath, "db.sqlite3")
 	db, err := db.Open(dbPath)
 	if err != nil {
 		log.Fatal(err)
@@ -43,7 +49,7 @@ func main() {
 	}
 	server := server.New(*addr)
 	server.AddHandler("/api/memory", datastore.MemoryHandler)
-	server.AddHandler("/", loggingHandler(http.FileServer(http.Dir("."))).ServeHTTP)
+	server.AddHandler("/", loggingHandler(http.FileServer(http.Dir(absStaticPath))).ServeHTTP)
 
 	onInterrupt(func() { server.Stop() })
 	server.Start()
