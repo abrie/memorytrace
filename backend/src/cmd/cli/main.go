@@ -4,10 +4,13 @@ import (
 	"backend/datastore"
 	"backend/db"
 	"backend/server"
+	"flag"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
+	"path/filepath"
 	"syscall"
 )
 
@@ -19,10 +22,23 @@ func loggingHandler(handler http.Handler) http.Handler {
 }
 
 func main() {
-	db := db.MustOpen("db.sqlite3")
-	datastore, err := datastore.New(db)
+	datastorePath := flag.String("datastore", "", "Path to datastore")
+	flag.Parse()
+
+	absDatastorePath, err := filepath.Abs(*datastorePath)
 	if err != nil {
-		log.Fatalf("Failed to open Datastore: %v", err)
+		log.Fatal(err)
+	}
+
+	dbPath := path.Join(absDatastorePath, "db.sqlite3")
+	db, err := db.Open(dbPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	datastore, err := datastore.Open(db)
+	if err != nil {
+		log.Fatal(err)
 	}
 	server := server.New(":9595")
 	server.AddHandler("/api/memory", datastore.MemoryHandler)

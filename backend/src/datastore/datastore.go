@@ -4,6 +4,7 @@ import (
 	"backend/datastore/db"
 	"backend/models/memory"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -12,9 +13,9 @@ type Datastore struct {
 	db db.Interface
 }
 
-func New(db db.Interface) (Datastore, error) {
+func Open(db db.Interface) (Datastore, error) {
 	if err := db.CreateTables(); err != nil {
-		return Datastore{}, err
+		return Datastore{}, fmt.Errorf("Datastore failed to open: %w", err)
 	}
 
 	return Datastore{

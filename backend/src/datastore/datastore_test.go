@@ -9,8 +9,12 @@ import (
 )
 
 func TestPutMemory(t *testing.T) {
-	db := db.MustOpen(":memory:")
-	datastore, err := New(db)
+	db, err := db.Open(":memory:")
+	if err != nil {
+		t.Fatalf("Failed to open database: %v", err)
+	}
+
+	datastore, err := Open(db)
 	if err != nil {
 		t.Fatalf("Failed to create Datastore: %v", err)
 	}
