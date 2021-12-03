@@ -22,6 +22,7 @@ func loggingHandler(handler http.Handler) http.Handler {
 }
 
 func main() {
+	addr := flag.String("addr", ":80", "Address for server")
 	datastorePath := flag.String("datastore", "", "Path to datastore")
 	flag.Parse()
 
@@ -40,7 +41,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	server := server.New(":9595")
+	server := server.New(*addr)
 	server.AddHandler("/api/memory", datastore.MemoryHandler)
 	server.AddHandler("/", loggingHandler(http.FileServer(http.Dir("."))).ServeHTTP)
 

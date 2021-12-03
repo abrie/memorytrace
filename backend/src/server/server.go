@@ -7,6 +7,7 @@ import (
 )
 
 type Server struct {
+	addr       string
 	signalChan chan struct{}
 	mux        *http.ServeMux
 	server     *http.Server
@@ -17,6 +18,7 @@ func New(addr string) Server {
 	server := http.Server{Addr: addr, Handler: mux}
 
 	return Server{
+		addr:       addr,
 		signalChan: make(chan struct{}),
 		mux:        mux,
 		server:     &server,
@@ -33,9 +35,10 @@ func (server Server) Start() {
 			log.Println("Server stopped")
 			return
 		} else {
-			log.Fatal(err)
+			log.Fatalf("Failed to start server: %v", err)
 		}
 	}()
+	log.Printf(`Starting server at address "%s"`, server.addr)
 	<-server.signalChan
 	server.server.Shutdown(context.Background())
 }
