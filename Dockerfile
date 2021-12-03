@@ -16,4 +16,4 @@ COPY --from=backend /go/bin/server /server
 COPY --from=frontend /usr/src/app/build /frontend
 ENV BUILD_TAG=$BUILD_TAG
 
-ENTRYPOINT ["/server", "-store", "/data", "-static", "/frontend", "-port", "80"]
+ENTRYPOINT ["/server", "-store", "/data", "-static", "/frontend", "-addr", ":80"]
