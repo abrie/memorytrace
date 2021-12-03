@@ -1,4 +1,7 @@
 {
+  "name": "frontend",
+  "version": "0.0.1",
+  "private": true,
   "scripts": {
     "start": "snowpack dev",
     "build": "snowpack build",
