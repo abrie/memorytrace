@@ -4,22 +4,15 @@ import (
 	"backend/datastore"
 	"backend/db"
 	"backend/server"
+	"backend/static"
 	"flag"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"path"
 	"path/filepath"
 	"syscall"
 )
-
-func loggingHandler(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println(r.Method, r.URL.Path)
-		handler.ServeHTTP(w, r)
-	})
-}
 
 func main() {
 	addr := flag.String("addr", ":80", "Address for server")
@@ -47,9 +40,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	static := static.New(absStaticPath)
+
 	server := server.New(*addr)
 	server.AddHandler("/api/memory", datastore.MemoryHandler)
-	server.AddHandler("/", loggingHandler(http.FileServer(http.Dir(absStaticPath))).ServeHTTP)
+	server.AddHandler("/", static.Handler)
 
 	onInterrupt(func() { server.Stop() })
 	server.Start()
