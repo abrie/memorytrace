@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install dependencies
-        run: yarn
-      - name: Run unit tests
-        run: yarn --verbose test
+      - name: Frontend tests
+        run: make test-frontend
+      - name: Backend tests
+        run: make test-backend
 
   build:
     needs: test
