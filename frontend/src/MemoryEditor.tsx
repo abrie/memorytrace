@@ -12,6 +12,10 @@ interface MemoryEditorProps {
 type Link = string;
 type Chain = Link[];
 
+interface ChainViewProps {
+  chain: Chain;
+}
+
 function ChainView(props: ChainViewProps): JSX.Element {
   return (
     <>
