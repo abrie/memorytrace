@@ -3,6 +3,7 @@ package db
 import (
 	"backend/models/memory"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -24,7 +25,7 @@ func Open(dsnURI string) (DB, error) {
 }
 
 func (db DB) CreateTables() error {
-	stmt, err := db.db.Prepare("CREATE TABLE IF NOT EXISTS memory(text TEXT, timestamp INTEGER, geolocation_status TEXT, latitude REAL, longitude REAL)")
+	stmt, err := db.db.Prepare("CREATE TABLE IF NOT EXISTS memory(text TEXT, chain TEXT, timestamp INTEGER, geolocation_status TEXT, latitude REAL, longitude REAL)")
 	if err != nil {
 		return err
 	}
@@ -38,12 +39,17 @@ func (db DB) CreateTables() error {
 }
 
 func (db DB) InsertMemory(memory memory.Memory) error {
-	stmt, err := db.db.Prepare("INSERT INTO memory (text, timestamp, geolocation_status, latitude, longitude) VALUES(?,?,?,?,?) ")
+	chainText, err := json.Marshal(memory.Chain)
+	if err != nil {
+		return fmt.Errorf("DB failed to insert memory: unable to marshal Chain into JSON: %w", err)
+	}
+
+	stmt, err := db.db.Prepare("INSERT INTO memory (text, chain, timestamp, geolocation_status, latitude, longitude) VALUES(?,?,?,?,?,?) ")
 	if err != nil {
 		return fmt.Errorf("DB failed to insert memory: %w", err)
 	}
 
-	res, err := stmt.Exec(memory.Text, memory.Timestamp, memory.GeolocationStatus, memory.Latitude, memory.Longitude)
+	res, err := stmt.Exec(memory.Text, string(chainText), memory.Timestamp, memory.GeolocationStatus, memory.Latitude, memory.Longitude)
 	if err != nil {
 		return fmt.Errorf("DB failed to insert memory: %w", err)
 	}
@@ -59,7 +65,7 @@ func (db DB) InsertMemory(memory memory.Memory) error {
 }
 
 func (db DB) SelectMemories() ([]memory.Memory, error) {
-	rows, err := db.db.Query("SELECT text, timestamp, geolocation_status, latitude, longitude FROM memory")
+	rows, err := db.db.Query("SELECT text, chain, timestamp, geolocation_status, latitude, longitude FROM memory")
 	defer rows.Close()
 	if err != nil {
 		return []memory.Memory{},
@@ -71,10 +77,17 @@ func (db DB) SelectMemories() ([]memory.Memory, error) {
 
 	for rows.Next() {
 		m := memory.Memory{}
-		if err := rows.Scan(&m.Text, &m.Timestamp, &m.GeolocationStatus, &m.Latitude, &m.Longitude); err != nil {
+		var chainText string
+
+		if err := rows.Scan(&m.Text, &chainText, &m.Timestamp, &m.GeolocationStatus, &m.Latitude, &m.Longitude); err != nil {
 			return results, fmt.Errorf("DB failed to select memories: %w", err)
 
 		}
+
+		if err := json.Unmarshal([]byte(chainText), &m.Chain); err != nil {
+			return results, fmt.Errorf("DB failed to select memories: Unable to unmarshal chain text: %w", err)
+		}
+
 		results = append(results, m)
 	}
 	return results, nil

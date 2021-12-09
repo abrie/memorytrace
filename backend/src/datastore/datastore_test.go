@@ -24,8 +24,8 @@ func TestMemoryHandler(t *testing.T) {
 	}
 
 	memories := []memory.Memory{
-		{Text: "memory1", Timestamp: 1, Latitude: 10.5, Longitude: 9.5},
-		{Text: "memory2", Timestamp: 2, Latitude: 20.5, Longitude: 19.5},
+		{Text: "memory1", Chain: []string{"first", "second", "third"}, Timestamp: 1, Latitude: 10.5, Longitude: 9.5},
+		{Text: "memory2", Chain: []string{"one", "two"}, Timestamp: 2, Latitude: 20.5, Longitude: 19.5},
 	}
 
 	w := httptest.NewRecorder()

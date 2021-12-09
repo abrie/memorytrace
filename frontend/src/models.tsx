@@ -1,6 +1,6 @@
 export interface Memory {
   timestamp: number;
-  text: string;
+  chain: string[];
   geolocationStatus: string;
   longitude: number | null;
   latitude: number | null;
