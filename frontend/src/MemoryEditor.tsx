@@ -69,7 +69,7 @@ export function MemoryEditor(props: MemoryEditorProps): JSX.Element {
       <ChainView chain={chain} />
       <div className="flex flex-row">
         <textarea
-          className="p-1 w-full border-2"
+          className="w-full p-1 border-2"
           placeholder="...???"
           onChange={(e: React.FormEvent<HTMLTextAreaElement>) => {
             setText(e.currentTarget.value);
@@ -78,22 +78,24 @@ export function MemoryEditor(props: MemoryEditorProps): JSX.Element {
           ref={inputRef}
           autoFocus
         ></textarea>
-        <button onClick={() => addLink(text)}>next</button>
+        <button className="bg-blue-300 p-1" onClick={() => addLink(text)}>
+          next
+        </button>
       </div>
-      <div className="flex flex-row">
+      <div className="flex flex-row mt-5">
         <button
-          className="bg-green-400 px-5"
+          className="px-5 mr-1 bg-green-400"
           onClick={() => props.storeMemory(buildMemory())}
         >
-          store
+          store this chain
         </button>
         <button
-          className="px-5 bg-yellow-400"
+          className="px-5 bg-yellow-400 mr-1"
           onClick={() => props.cancelMemory()}
         >
           cancel
         </button>
-        <div className="px-5">{position.status}</div>
+        <div className="px-5 border">{position.status}</div>
       </div>
     </div>
   );
