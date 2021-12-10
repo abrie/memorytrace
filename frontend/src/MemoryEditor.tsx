@@ -78,19 +78,22 @@ export function MemoryEditor(props: MemoryEditorProps): JSX.Element {
           ref={inputRef}
           autoFocus
         ></textarea>
-        <button className="bg-blue-300 p-1" onClick={() => addLink(text)}>
+        <button
+          className="text-white rounded bg-cyan-500 shadow-lg shadow-cyan-500/50 p-1"
+          onClick={() => addLink(text)}
+        >
           next
         </button>
       </div>
       <div className="flex flex-row mt-5">
         <button
-          className="px-5 mr-1 bg-green-400"
+          className="px-5 mr-1 bg-green-400 rounded"
           onClick={() => props.storeMemory(buildMemory())}
         >
-          store this chain
+          end this chain
         </button>
         <button
-          className="px-5 bg-yellow-400 mr-1"
+          className="px-5 bg-yellow-400 mr-1 rounded"
           onClick={() => props.cancelMemory()}
         >
           cancel
