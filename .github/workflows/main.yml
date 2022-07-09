@@ -30,7 +30,7 @@ jobs:
         run: docker build . --file Dockerfile --tag $GHCR_IMAGE_NAME --build-arg GITHUB_RUN_NUMBER
 
       - name : Log into Github Container Registry
-        run: echo "${{ secrets.GHCR_WRITE_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
 
       - name: Push image to registry
         run: docker push $GHCR_IMAGE_NAME
